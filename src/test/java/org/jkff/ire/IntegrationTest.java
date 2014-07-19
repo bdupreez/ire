@@ -22,7 +22,7 @@ public class IntegrationTest {
     private static final String DNA;
 
     static {
-        String z =
+        final String z =
                 "H4sIAAAAAAAAAFWcbZZjSYpE18rhBxtg/6dS3Gv+onpmeqojM6QndzDsA3VN/f6np3bq3792//1f" +
                         "z/a///fvp70z//6suv79U83vX9X9+8N/f9T77397/v3l/f3qvz/+/Xx/vzz3UnP/uL8X+/en+3uf" +
                         "f3+9fr/47/fn98b1e61/f+H3n/7927+/8+/f9vc2vwfY/v3Vfy//7y1//7P3678fzb+n+L37vz/4" +
@@ -293,29 +293,29 @@ public class IntegrationTest {
                   new GZIPInputStream(
                   new ByteArrayInputStream(
                   new BASE64Decoder().decodeBuffer(z))))).readLine().toLowerCase();
-        } catch (IOException e) {
+        } catch (final IOException e) {
             throw new AssertionError();
         }
     }
 
     @Test
     public void test007() {
-        PatternSet pat = RegexCompiler.compile("007", "008");
-        IndexedString s1 = pat.match("as00haklsdjhfla00");
-        IndexedString s2 = pat.match("7jhd7dsh007dsfa");
+        final PatternSet pat = RegexCompiler.compile("007", "008");
+        final IndexedString s1 = pat.match("as00haklsdjhfla00");
+        final IndexedString s2 = pat.match("7jhd7dsh007dsfa");
         System.out.println(s1.append(s2).getMatches());
     }
 
     @Test
     public void testOverlappingMatches() {
-        PatternSet pat = RegexCompiler.compile("abra", "braha");
-        IndexedString s = pat.match("habrahabr");
+        final PatternSet pat = RegexCompiler.compile("abra", "braha");
+        final IndexedString s = pat.match("habrahabr");
         System.out.println(s.getMatches());
     }
 
     @Test
     public void testDNA() throws IOException {
-        String[] regexes = new String[]{
+        final String[] regexes = new String[]{
                 "[cgt]gggtaaa|tttaccc[acg]",
                 "a[act]ggtaaa|tttacc[agt]t",
                 "ag[act]gtaaa|tttac[agt]ct",
@@ -326,20 +326,20 @@ public class IntegrationTest {
                 "agggtaa[cgt]|[acg]ttaccct",
         };
 
-        PatternSet pat = RegexCompiler.compile(regexes);
+        final PatternSet pat = RegexCompiler.compile(regexes);
 
-        IndexedString idna = pat.match(DNA);
+        final IndexedString idna = pat.match(DNA);
 
-        int[] expectedFreq = new int[regexes.length];
-        int[] actualFreq = new int[regexes.length];
+        final int[] expectedFreq = new int[regexes.length];
+        final int[] actualFreq = new int[regexes.length];
 
-        for (Match m : idna.getMatches()) {
+        for (final Match m : idna.getMatches()) {
             ++actualFreq[m.whichPattern()];
         }
 
         for (int i = 0; i < regexes.length; i++) {
-            String regex = regexes[i];
-            Matcher m = Pattern.compile(regex).matcher(DNA);
+            final String regex = regexes[i];
+            final Matcher m = Pattern.compile(regex).matcher(DNA);
             for (int s = 0; m.find(s); s = m.start() + 1) {
                 ++expectedFreq[i];
             }
@@ -353,7 +353,7 @@ public class IntegrationTest {
     @Test
     @Ignore("Not really a test")
     public void testPerformance() {
-        String[] regexes = new String[]{
+        final String[] regexes = new String[]{
                 "[cgt]gggtaaa|tttaccc[acg]",
                 "a[act]ggtaaa|tttacc[agt]t",
                 "ag[act]gtaaa|tttac[agt]ct",
@@ -364,40 +364,40 @@ public class IntegrationTest {
                 "agggtaa[cgt]|[acg]ttaccct",
         };
 
-        PatternSet pat = RegexCompiler.compile(regexes);
-        Pattern[] pats = new Pattern[regexes.length];
+        final PatternSet pat = RegexCompiler.compile(regexes);
+        final Pattern[] pats = new Pattern[regexes.length];
         for(int i = 0; i < regexes.length; ++i) {
             pats[i] = Pattern.compile(regexes[i]);
         }
 
         for(int n = 1; n < 50; ++n) {
-            StringBuilder sb = new StringBuilder();
+            final StringBuilder sb = new StringBuilder();
             for(int i = 0; i < n; ++i) {
                 sb.append(DNA);
             }
-            String dna = sb.toString();
+            final String dna = sb.toString();
 
-            int[] expectedFreq = new int[regexes.length];
-            int[] actualFreq = new int[regexes.length];
+            final int[] expectedFreq = new int[regexes.length];
+            final int[] actualFreq = new int[regexes.length];
 
             long t0 = System.nanoTime();
-            IndexedString idna = pat.match(dna);
-            long ireIndexingTimeMs = (System.nanoTime() - t0)/1000000L;
+            final IndexedString idna = pat.match(dna);
+            final long ireIndexingTimeMs = (System.nanoTime() - t0)/1000000L;
             t0 = System.nanoTime();
-            for(Match m : idna.getMatches()) {
+            for(final Match m : idna.getMatches()) {
                 ++actualFreq[m.whichPattern()];
             }
-            long ireMatchingTimeMs = (System.nanoTime() - t0)/1000000L;
+            final long ireMatchingTimeMs = (System.nanoTime() - t0)/1000000L;
 
             t0 = System.nanoTime();
             for (int i = 0; i < pats.length; i++) {
-                Pattern p = pats[i];
-                Matcher m = p.matcher(dna);
+                final Pattern p = pats[i];
+                final Matcher m = p.matcher(dna);
                 for (int s = 0; m.find(s); s = m.start() + 1) {
                     ++expectedFreq[i];
                 }
             }
-            long javaMatchingTimeMs = (System.nanoTime() - t0)/1000000L;
+            final long javaMatchingTimeMs = (System.nanoTime() - t0)/1000000L;
 
             System.out.println(
                     n + " " + ireIndexingTimeMs + " " + ireMatchingTimeMs + " " +

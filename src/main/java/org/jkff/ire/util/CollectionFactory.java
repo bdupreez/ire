@@ -7,12 +7,12 @@ import java.util.*;
  */
 public class CollectionFactory {
     public static <T> List<T> newArrayList() {
-        return new ArrayList<T>();
+        return new ArrayList<>();
     }
     public static <T> Set<T> newLinkedHashSet() {
-        return new LinkedHashSet<T>();
+        return new LinkedHashSet<>();
     }
     public static <K,V> Map<K,V> newLinkedHashMap() {
-        return new LinkedHashMap<K,V>();
+        return new LinkedHashMap<>();
     }
 }

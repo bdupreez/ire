@@ -7,7 +7,7 @@ public class Labeled implements RxNode {
     public final RxNode a;
     public final int patternId;
 
-    public Labeled(RxNode a, int patternId) {
+    public Labeled(final RxNode a, final int patternId) {
         this.a = a;
         this.patternId = patternId;
     }

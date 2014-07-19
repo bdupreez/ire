@@ -6,10 +6,10 @@ import org.jkff.ire.util.WrappedBitSet;
  * Created on: 31.07.2010 15:16:46
  */
 public class IntState implements State {
-    private int index;
-    private WrappedBitSet terminatedPatterns;
+    private final int index;
+    private final WrappedBitSet terminatedPatterns;
 
-    public IntState(int index, WrappedBitSet terminatedPatterns) {
+    public IntState(final int index, final WrappedBitSet terminatedPatterns) {
         this.index = index;
         this.terminatedPatterns = terminatedPatterns;
     }

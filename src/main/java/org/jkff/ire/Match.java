@@ -4,11 +4,11 @@ package org.jkff.ire;
  * Created on: 22.07.2010 23:25:29
  */
 public class Match {
-    private int whichPattern;
-    private int startPos;
-    private int length;
+    private final int whichPattern;
+    private final int startPos;
+    private final int length;
 
-    public Match(int whichPattern, int startPos, int length) {
+    public Match(final int whichPattern, final int startPos, final int length) {
         this.whichPattern = whichPattern;
         this.startPos = startPos;
         this.length = length;

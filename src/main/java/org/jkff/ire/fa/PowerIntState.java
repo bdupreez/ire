@@ -6,10 +6,10 @@ import org.jkff.ire.util.WrappedBitSet;
  * Created on: 01.08.2010 13:20:58
  */
 public class PowerIntState implements State {
-    private State[] basis;
-    private WrappedBitSet subset;
+    private final State[] basis;
+    private final WrappedBitSet subset;
 
-    public PowerIntState(State[] basis, WrappedBitSet subset) {
+    public PowerIntState(final State[] basis, final WrappedBitSet subset) {
         this.basis = basis;
         this.subset = subset;
     }

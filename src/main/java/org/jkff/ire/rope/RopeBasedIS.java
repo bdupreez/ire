@@ -16,25 +16,25 @@ import org.jkff.ire.util.*;
 public class RopeBasedIS<ST extends State> implements DFAIndexedString<ST> {
     private static final int DEFAULT_BLOCK_SIZE = 128;
 
-    private BiDFA<Character,ST> bidfa;
-    private Rope<TransferFunctions<ST>> rope;
+    private final BiDFA<Character,ST> bidfa;
+    private final Rope<TransferFunctions<ST>> rope;
 
-    public RopeBasedIS(BiDFA<Character,ST> bidfa, String value) {
+    public RopeBasedIS(final BiDFA<Character,ST> bidfa, final String value) {
         this(bidfa, value, DEFAULT_BLOCK_SIZE);
     }
 
-    public RopeBasedIS(BiDFA<Character,ST> bidfa, String value, int blockSize) {
+    public RopeBasedIS(final BiDFA<Character,ST> bidfa, final String value, final int blockSize) {
         this(bidfa, Rope.fromString(
-                new RopeFactory<TransferFunctions<ST>>(
+                new RopeFactory<>(
                         blockSize,
-                        new TFProduct<ST>(
+                        new TFProduct<>(
                                 bidfa.getForward().getTransferFunctionsReducer(),
                                 bidfa.getBackward().getTransferFunctionsReducer()),
-                        new TFMap<ST>(bidfa)),
+                        new TFMap<>(bidfa)),
                 value));
     }
 
-    private RopeBasedIS(BiDFA<Character,ST> bidfa, Rope<TransferFunctions<ST>> rope) {
+    private RopeBasedIS(final BiDFA<Character,ST> bidfa, final Rope<TransferFunctions<ST>> rope) {
         this.bidfa = bidfa;
         this.rope = rope;
     }
@@ -52,67 +52,55 @@ public class RopeBasedIS<ST extends State> implements DFAIndexedString<ST> {
     }
 
     public Pair<IndexedString, IndexedString> splitBefore(final int index) {
-        Function2<Integer, Rope<TransferFunctions<ST>>, Integer> addRopeLength = new Function2<Integer, Rope<TransferFunctions<ST>>, Integer>() {
-            public Integer applyTo(Integer len, Rope<TransferFunctions<ST>> rope) {
-                return len + rope.length();
-            }
-        };
-        Function2<Integer, Character, Integer> inc = new Function2<Integer, Character, Integer>() {
-            public Integer applyTo(Integer len, Character c) {
-                return len + 1;
-            }
-        };
-        Predicate<Integer> isAfterIndex = new Predicate<Integer>() {
-            public boolean isTrueFor(Integer x) {
-                return x >= index;
-            }
-        };
-        Pair<Rope<TransferFunctions<ST>>, Rope<TransferFunctions<ST>>> p =
+        final Function2<Integer, Rope<TransferFunctions<ST>>, Integer> addRopeLength = (len, rope1) -> len + rope1.length();
+        final Function2<Integer, Character, Integer> inc = (len, c) -> len + 1;
+        final Predicate<Integer> isAfterIndex = x -> x >= index;
+        final Pair<Rope<TransferFunctions<ST>>, Rope<TransferFunctions<ST>>> p =
                 rope.splitAfterRise(0, addRopeLength, inc, isAfterIndex);
         return Pair.of(
-                (IndexedString)new RopeBasedIS<ST>(bidfa, p.first),
-                (IndexedString)new RopeBasedIS<ST>(bidfa, p.second));
+                (IndexedString)new RopeBasedIS<>(bidfa, p.first),
+                (IndexedString)new RopeBasedIS<>(bidfa, p.second));
     }
 
     public <T> Pair<IndexedString, IndexedString> splitAfterRise(
-            T seed,
+            final T seed,
             final Function2<T, IndexedString, T> addChunk,
-            Function2<T, Character, T> addChar,
-            Predicate<T> toBool)
+            final Function2<T, Character, T> addChar,
+            final Predicate<T> toBool)
     {
-        Pair<Rope<TransferFunctions<ST>>, Rope<TransferFunctions<ST>>> p = rope.splitAfterRise(
+        final Pair<Rope<TransferFunctions<ST>>, Rope<TransferFunctions<ST>>> p = rope.splitAfterRise(
                 seed, toRopeAddChunkFun(addChunk), addChar, toBool);
         return (p == null) ? null : Pair.of(
-                (IndexedString) new RopeBasedIS<ST>(bidfa, p.first),
-                (IndexedString) new RopeBasedIS<ST>(bidfa, p.second));
+                (IndexedString) new RopeBasedIS<>(bidfa, p.first),
+                (IndexedString) new RopeBasedIS<>(bidfa, p.second));
     }
 
     public <T> Pair<IndexedString, IndexedString> splitAfterBackRise(
-            T seed,
-            Function2<T, IndexedString, T> addChunk,
-            Function2<T, Character, T> addChar, Predicate<T> toBool)
+            final T seed,
+            final Function2<T, IndexedString, T> addChunk,
+            final Function2<T, Character, T> addChar, final Predicate<T> toBool)
     {
-        Pair<Rope<TransferFunctions<ST>>, Rope<TransferFunctions<ST>>> p = rope.splitAfterBackRise(
+        final Pair<Rope<TransferFunctions<ST>>, Rope<TransferFunctions<ST>>> p = rope.splitAfterBackRise(
                 seed, toRopeAddChunkFun(addChunk), addChar, toBool);
         return (p == null) ? null : Pair.of(
-                (IndexedString) new RopeBasedIS<ST>(bidfa, p.first),
-                (IndexedString) new RopeBasedIS<ST>(bidfa, p.second));
+                (IndexedString) new RopeBasedIS<>(bidfa, p.first),
+                (IndexedString) new RopeBasedIS<>(bidfa, p.second));
     }
 
     private <T> Function2<T, Rope<TransferFunctions<ST>>, T> toRopeAddChunkFun(
             final Function2<T, IndexedString, T> addChunk) {
         return new Function2<T, Rope<TransferFunctions<ST>>, T>() {
-            public T applyTo(T st, Rope<TransferFunctions<ST>> r) {
-                return addChunk.applyTo(st, new RopeBasedIS<ST>(bidfa, r));
+            public T applyTo(final T st, final Rope<TransferFunctions<ST>> r) {
+                return addChunk.applyTo(st, new RopeBasedIS<>(bidfa, r));
             }
         };
     }
 
-    public RopeBasedIS<ST> append(IndexedString s) {
-        return new RopeBasedIS<ST>(bidfa, rope.append(((RopeBasedIS<ST>) s).rope));
+    public RopeBasedIS<ST> append(final IndexedString s) {
+        return new RopeBasedIS<>(bidfa, rope.append(((RopeBasedIS<ST>) s).rope));
     }
 
-    public RopeBasedIS<ST> subSequence(int start, int end) {
+    public RopeBasedIS<ST> subSequence(final int start, final int end) {
         return (RopeBasedIS<ST>) splitBefore(start).second.splitBefore(end-start).first;
     }
 
@@ -120,7 +108,7 @@ public class RopeBasedIS<ST extends State> implements DFAIndexedString<ST> {
         return rope.length();
     }
 
-    public char charAt(int index) {
+    public char charAt(final int index) {
         return rope.charAt(index);
     }
 
@@ -132,32 +120,28 @@ public class RopeBasedIS<ST extends State> implements DFAIndexedString<ST> {
         TransferFunction<ST> forward;
         TransferFunction<ST> backward;
 
-        private TransferFunctions(TransferFunction<ST> forward, TransferFunction<ST> backward) {
+        private TransferFunctions(final TransferFunction<ST> forward, final TransferFunction<ST> backward) {
             this.forward = forward;
             this.backward = backward;
         }
     }
     private static class TFProduct<ST> implements Reducer<TransferFunctions<ST>> {
-        private static TransferFunction UNIT_TF = new TransferFunction() {
-            public Object next(Object x) {
-                return x;
-            }
-        };
-        private static TransferFunctions UNIT = new TransferFunctions(UNIT_TF, UNIT_TF);
+        private static final TransferFunction UNIT_TF = x -> x;
+        private static final TransferFunctions UNIT = new TransferFunctions(UNIT_TF, UNIT_TF);
 
-        private Reducer<TransferFunction<ST>> forwardReducer;
-        private Reducer<TransferFunction<ST>> backwardReducer;
+        private final Reducer<TransferFunction<ST>> forwardReducer;
+        private final Reducer<TransferFunction<ST>> backwardReducer;
 
         private TFProduct(
-                Reducer<TransferFunction<ST>> forwardReducer,
-                Reducer<TransferFunction<ST>> backwardReducer)
+                final Reducer<TransferFunction<ST>> forwardReducer,
+                final Reducer<TransferFunction<ST>> backwardReducer)
         {
             this.forwardReducer = forwardReducer;
             this.backwardReducer = backwardReducer;
         }
 
-        public TransferFunctions<ST> compose(TransferFunctions<ST> a, TransferFunctions<ST> b) {
-            return new TransferFunctions<ST>(
+        public TransferFunctions<ST> compose(final TransferFunctions<ST> a, final TransferFunctions<ST> b) {
+            return new TransferFunctions<>(
                     a.forward==UNIT_TF ? b.forward : b.forward == UNIT_TF ? a.forward :
                     forwardReducer.compose(a.forward, b.forward),
                     a.backward==UNIT_TF ? b.backward : b.backward == UNIT_TF ? a.backward :
@@ -169,22 +153,22 @@ public class RopeBasedIS<ST extends State> implements DFAIndexedString<ST> {
                 return UNIT;
             }
 
-            TransferFunction sumForward = forwardReducer.composeAll(new Sequence<TransferFunction<ST>>() {
+            final TransferFunction sumForward = forwardReducer.composeAll(new Sequence<TransferFunction<ST>>() {
                 public int length() {
                     return tfs.length();
                 }
 
-                public TransferFunction<ST> get(int i) {
+                public TransferFunction<ST> get(final int i) {
                     return tfs.get(i).forward;
                 }
             });
 
-            TransferFunction sumBackward = backwardReducer.composeAll(new Sequence<TransferFunction<ST>>() {
+            final TransferFunction sumBackward = backwardReducer.composeAll(new Sequence<TransferFunction<ST>>() {
                 public int length() {
                     return tfs.length();
                 }
 
-                public TransferFunction<ST> get(int i) {
+                public TransferFunction<ST> get(final int i) {
                     return tfs.get(length()-i-1).backward;
                 }
             });
@@ -198,18 +182,18 @@ public class RopeBasedIS<ST extends State> implements DFAIndexedString<ST> {
     }
 
     private static class TFMap<ST extends State> implements Function<Character, TransferFunctions<ST>> {
-        private BiDFA<Character, ST> bidfa;
+        private final BiDFA<Character, ST> bidfa;
 
-        private TransferFunctions[] cache = new TransferFunctions[1 + Character.MAX_VALUE];
+        private final TransferFunctions[] cache = new TransferFunctions[1 + Character.MAX_VALUE];
 
-        private TFMap(BiDFA<Character, ST> bidfa) {
+        private TFMap(final BiDFA<Character, ST> bidfa) {
             this.bidfa = bidfa;
         }
 
-        public TransferFunctions<ST> applyTo(Character ch) {
-            char c = ch;
+        public TransferFunctions<ST> applyTo(final Character ch) {
+            final char c = ch;
             if(cache[c] == null) {
-                cache[c] = new TransferFunctions<ST>(
+                cache[c] = new TransferFunctions<>(
                     bidfa.getForward().transfer(c),
                     bidfa.getBackward().transfer(c));
             }

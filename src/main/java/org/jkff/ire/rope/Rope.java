@@ -12,7 +12,7 @@ import org.jkff.ire.util.Reducer;
  */
 public class Rope<M> {
     @NotNull
-    private RopeFactory<M> factory;
+    private final RopeFactory<M> factory;
 
     private final M sum;
 
@@ -22,35 +22,35 @@ public class Rope<M> {
 
     private final String block;
 
-    private Rope(Rope<M> a, Rope<M> b, M sum) {
+    private Rope(final Rope<M> a, final Rope<M> b, final M sum) {
         this(a, b, null, a.factory, null, sum);
     }
 
-    private Rope(Rope<M> a, Rope<M> b, Rope<M> c, M sum) {
+    private Rope(final Rope<M> a, final Rope<M> b, final Rope<M> c, final M sum) {
         this(a, b, c, a.factory, null, sum);
     }
 
-    private Rope(RopeFactory<M> factory, String block, M sum) {
+    private Rope(final RopeFactory<M> factory, final String block, final M sum) {
         this(null, null, null, factory, block, sum);
     }
 
-    private Rope(RopeFactory<M> factory, String block) {
+    private Rope(final RopeFactory<M> factory, final String block) {
         this(null, null, null, factory, block, sumString(factory, block));
     }
 
-    private static <M> M sumString(RopeFactory<M> factory, final String block) {
+    private static <M> M sumString(final RopeFactory<M> factory, final String block) {
         return factory.mapReduce(new Sequence<Character>() {
             public int length() {
                 return block.length();
             }
 
-            public Character get(int i) {
+            public Character get(final int i) {
                 return block.charAt(i);
             }
         });
     }
 
-    private Rope(Rope<M> a, Rope<M> b, Rope<M> c, RopeFactory<M> factory, String block, M sum) {
+    private Rope(final Rope<M> a, final Rope<M> b, final Rope<M> c, final RopeFactory<M> factory, final String block, final M sum) {
         if (block != null) {
             assert a == null : "Block can't have a child: 'a'";
             assert b == null : "Block can't have a child: 'b'";
@@ -87,7 +87,7 @@ public class Rope<M> {
         return length;
     }
 
-    public char charAt(int index) {
+    public char charAt(final int index) {
         if (block != null)
             return block.charAt(index);
         if (index < a.length())
@@ -101,45 +101,45 @@ public class Rope<M> {
         return sum;
     }
 
-    public Rope<M> append(Rope<M> other) {
+    public Rope<M> append(final Rope<M> other) {
         return append(this, other);
     }
 
-    private static <M> Rope<M> append(Rope<M> left, Rope<M> right) {
-        int blockSize = left.factory.getBlockSize();
-        Reducer<M> reducer = left.factory.getReducer();
+    private static <M> Rope<M> append(final Rope<M> left, final Rope<M> right) {
+        final int blockSize = left.factory.getBlockSize();
+        final Reducer<M> reducer = left.factory.getReducer();
 
-        M sum = reducer.compose(left.sum, right.sum);
+        final M sum = reducer.compose(left.sum, right.sum);
 
         if (left.h == right.h) {
             if (left.h > 0)
-                return new Rope<M>(left, right, sum);
+                return new Rope<>(left, right, sum);
             if (!left.isUnderflownBlock() && !right.isUnderflownBlock())
-                return new Rope<M>(left, right, sum);
-            String bigBlock = left.block + right.block;
+                return new Rope<>(left, right, sum);
+            final String bigBlock = left.block + right.block;
             if (bigBlock.length() <= 2 * blockSize - 1)
-                return new Rope<M>(left.factory, bigBlock, sum);
-            return new Rope<M>(
-                    new Rope<M>(left.factory, bigBlock.substring(0, blockSize)),
-                    new Rope<M>(left.factory, bigBlock.substring(blockSize, bigBlock.length())),
+                return new Rope<>(left.factory, bigBlock, sum);
+            return new Rope<>(
+                    new Rope<>(left.factory, bigBlock.substring(0, blockSize)),
+                    new Rope<>(left.factory, bigBlock.substring(blockSize, bigBlock.length())),
                     sum);
         } else if (left.h == right.h + 1) {
             if (left.c == null)
-                return new Rope<M>(left.a, left.b, right, sum);
+                return new Rope<>(left.a, left.b, right, sum);
             else
-                return new Rope<M>(
+                return new Rope<>(
                         // Optimization opportunity: remember a+b and b+c sums in 3-child nodes
-                        new Rope<M>(left.a, left.b, reducer.compose(left.a.sum, left.b.sum)),
-                        new Rope<M>(left.c, right, reducer.compose(left.c.sum, right.sum)),
+                        new Rope<>(left.a, left.b, reducer.compose(left.a.sum, left.b.sum)),
+                        new Rope<>(left.c, right, reducer.compose(left.c.sum, right.sum)),
                         sum);
         } else if (right.h == left.h + 1) {
             if (right.c == null)
-                return new Rope<M>(left, right.a, right.b, sum);
+                return new Rope<>(left, right.a, right.b, sum);
             else
-                return new Rope<M>(
-                        new Rope<M>(left, right.a, reducer.compose(left.sum, right.a.sum)),
+                return new Rope<>(
+                        new Rope<>(left, right.a, reducer.compose(left.sum, right.a.sum)),
                         // Optimization opportunity: remember a+b and b+c sums in 3-child nodes
-                        new Rope<M>(right.b, right.c, reducer.compose(right.b.sum, right.c.sum)),
+                        new Rope<>(right.b, right.c, reducer.compose(right.b.sum, right.c.sum)),
                         sum);
         } else if (left.h > right.h + 1) {
             if (left.c == null)
@@ -158,27 +158,27 @@ public class Rope<M> {
     }
 
     public <S> Pair<Rope<M>, Rope<M>> splitAfterRise(
-            S seed,
-            Function2<S, Rope<M>, S> addChunk, Function2<S, Character, S> addChar,
-            Predicate<S> toBool) {
+            final S seed,
+            final Function2<S, Rope<M>, S> addChunk, final Function2<S, Character, S> addChar,
+            final Predicate<S> toBool) {
         if (block != null) {
             S s = seed;
             for (int i = 0; i < block.length(); ++i) {
                 if (toBool.isTrueFor(s))
                     return Pair.of(
-                            new Rope<M>(this.factory, block.substring(0, i)),
-                            new Rope<M>(this.factory, block.substring(i, block.length())));
+                            new Rope<>(this.factory, block.substring(0, i)),
+                            new Rope<>(this.factory, block.substring(i, block.length())));
                 s = addChar.applyTo(s, block.charAt(i));
             }
             if (toBool.isTrueFor(s))
-                return Pair.of(this, new Rope<M>(this.factory, ""));
+                return Pair.of(this, new Rope<>(this.factory, ""));
             return null;
         } else {
             if (toBool.isTrueFor(seed))
-                return Pair.of(new Rope<M>(this.factory, ""), this);
-            S afterA = addChunk.applyTo(seed, a);
+                return Pair.of(new Rope<>(this.factory, ""), this);
+            final S afterA = addChunk.applyTo(seed, a);
             if (toBool.isTrueFor(afterA)) {
-                Pair<Rope<M>, Rope<M>> sa = a.splitAfterRise(seed, addChunk, addChar, toBool);
+                final Pair<Rope<M>, Rope<M>> sa = a.splitAfterRise(seed, addChunk, addChar, toBool);
                 if(sa == null) {
                     System.out.println("Oops");
                 }
@@ -186,18 +186,18 @@ public class Rope<M> {
                         ? Pair.of(sa.first, sa.second.append(b))
                         : Pair.of(sa.first, sa.second.append(b).append(c));
             }
-            S afterB = addChunk.applyTo(afterA, b);
+            final S afterB = addChunk.applyTo(afterA, b);
             if (toBool.isTrueFor(afterB)) {
-                Pair<Rope<M>, Rope<M>> sb = b.splitAfterRise(afterA, addChunk, addChar, toBool);
+                final Pair<Rope<M>, Rope<M>> sb = b.splitAfterRise(afterA, addChunk, addChar, toBool);
                 return (c == null)
                         ? Pair.of(a.append(sb.first), sb.second)
                         : Pair.of(a.append(sb.first), sb.second.append(c));
             }
             if (c == null)
                 return null;
-            S afterC = addChunk.applyTo(afterB, c);
+            final S afterC = addChunk.applyTo(afterB, c);
             if (toBool.isTrueFor(afterC)) {
-                Pair<Rope<M>, Rope<M>> sc = c.splitAfterRise(afterB, addChunk, addChar, toBool);
+                final Pair<Rope<M>, Rope<M>> sc = c.splitAfterRise(afterB, addChunk, addChar, toBool);
                 return Pair.of(a.append(b).append(sc.first), sc.second);
             }
             return null;
@@ -205,42 +205,42 @@ public class Rope<M> {
     }
 
     public <S> Pair<Rope<M>, Rope<M>> splitAfterBackRise(
-            S seed,
-            Function2<S, Rope<M>, S> addChunk, Function2<S, Character, S> addChar,
-            Predicate<S> toBool) {
+            final S seed,
+            final Function2<S, Rope<M>, S> addChunk, final Function2<S, Character, S> addChar,
+            final Predicate<S> toBool) {
         if (block != null) {
             S s = seed;
             for (int i = block.length() - 1; i >= 0; --i) {
                 if (toBool.isTrueFor(s))
                     return Pair.of(
-                            new Rope<M>(this.factory, block.substring(0, i + 1)),
-                            new Rope<M>(this.factory, block.substring(i + 1, block.length())));
+                            new Rope<>(this.factory, block.substring(0, i + 1)),
+                            new Rope<>(this.factory, block.substring(i + 1, block.length())));
                 s = addChar.applyTo(s, block.charAt(i));
             }
             if (toBool.isTrueFor(s))
-                return Pair.of(new Rope<M>(this.factory, ""), this);
+                return Pair.of(new Rope<>(this.factory, ""), this);
             return null;
         } else {
             if (toBool.isTrueFor(seed))
-                return Pair.of(this, new Rope<M>(this.factory, ""));
+                return Pair.of(this, new Rope<>(this.factory, ""));
             S beforeC = seed;
             if (c != null) {
                 beforeC = addChunk.applyTo(seed, c);
                 if (toBool.isTrueFor(beforeC)) {
-                    Pair<Rope<M>, Rope<M>> sc = c.splitAfterBackRise(seed, addChunk, addChar, toBool);
+                    final Pair<Rope<M>, Rope<M>> sc = c.splitAfterBackRise(seed, addChunk, addChar, toBool);
                     return Pair.of(a.append(b).append(sc.first), sc.second);
                 }
             }
-            S beforeB = addChunk.applyTo(beforeC, b);
+            final S beforeB = addChunk.applyTo(beforeC, b);
             if (toBool.isTrueFor(beforeB)) {
-                Pair<Rope<M>, Rope<M>> sb = b.splitAfterBackRise(beforeC, addChunk, addChar, toBool);
+                final Pair<Rope<M>, Rope<M>> sb = b.splitAfterBackRise(beforeC, addChunk, addChar, toBool);
                 return (c == null)
                         ? Pair.of(a.append(sb.first), sb.second)
                         : Pair.of(a.append(sb.first), sb.second.append(c));
             }
-            S beforeA = addChunk.applyTo(beforeB, a);
+            final S beforeA = addChunk.applyTo(beforeB, a);
             if (toBool.isTrueFor(beforeA)) {
-                Pair<Rope<M>, Rope<M>> sa = a.splitAfterBackRise(beforeB, addChunk, addChar, toBool);
+                final Pair<Rope<M>, Rope<M>> sa = a.splitAfterBackRise(beforeB, addChunk, addChar, toBool);
                 return (c == null)
                         ? Pair.of(sa.first, sa.second.append(b))
                         : Pair.of(sa.first, sa.second.append(b).append(c));
@@ -254,11 +254,11 @@ public class Rope<M> {
     }
 
     public String toString() {
-        StringBuilder res = new StringBuilder();
+        final StringBuilder res = new StringBuilder();
         return toString(res).toString();
     }
 
-    private StringBuilder toString(StringBuilder sb) {
+    private StringBuilder toString(final StringBuilder sb) {
         if (block != null) {
             sb.append(block);
         } else {
@@ -270,11 +270,11 @@ public class Rope<M> {
         return sb;
     }
 
-    public static <M> Rope<M> fromString(RopeFactory<M> factory, String value) {
-        Rope<M> res = new Rope<M>(factory, "");
+    public static <M> Rope<M> fromString(final RopeFactory<M> factory, final String value) {
+        Rope<M> res = new Rope<>(factory, "");
         for (int i = 0; i < value.length(); i += 2 * factory.getBlockSize() - 1) {
-            String block = value.substring(i, Math.min(value.length(), i + 2 * factory.getBlockSize() - 1));
-            res = res.append(new Rope<M>(factory, block));
+            final String block = value.substring(i, Math.min(value.length(), i + 2 * factory.getBlockSize() - 1));
+            res = res.append(new Rope<>(factory, block));
         }
         return res;
     }

@@ -11,18 +11,18 @@ import static org.jkff.ire.util.CollectionFactory.newArrayList;
  * Created on: 01.08.2010 13:47:21
  */
 public class NFABuilder {
-    private IntState[] basisStates;
-    private int numPatterns;
-    private int initialState;
-    private List<Transition> transitions = newArrayList();
+    private final IntState[] basisStates;
+    private final int numPatterns;
+    private final int initialState;
+    private final List<Transition> transitions = newArrayList();
 
-    public NFABuilder(int numBasisStates, int initialState, int numPatterns) {
+    public NFABuilder(final int numBasisStates, final int initialState, final int numPatterns) {
         this.basisStates = new IntState[numBasisStates];
         this.initialState = initialState;
         this.numPatterns = numPatterns;
     }
 
-    public StateBuilder state(int i, int... termPatterns) {
+    public StateBuilder state(final int i, final int... termPatterns) {
         return new StateBuilder(i, termPatterns);
     }
 
@@ -31,24 +31,18 @@ public class NFABuilder {
         for(int i = 0; i < 256; ++i)
             for(int j = 0; j < basisStates.length; ++j)
                 char2state2next[i][j] = new WrappedBitSet(basisStates.length);
-        
-        for(Transition t : transitions) {
-            if(t.c != null) {
-                char2state2next[t.c][t.from].set(t.to);
-            }
-        }
-        for(Transition t : transitions) {
+
+        transitions.stream().filter(t -> t.c != null).forEach(t -> {
+            char2state2next[t.c][t.from].set(t.to);
+        });
+        for(final Transition t : transitions) {
             if(t.c == null) {
                 for(int i = 0; i < 256; ++i)
                     if(char2state2next[i][t.from].isEmpty())
                         char2state2next[i][t.from].set(t.to);
             }
         }
-        TransferTable<Character, PowerIntState> transfer = new TransferTable<Character, PowerIntState>() {
-            public TransferFunction<PowerIntState> forToken(Character token) {
-                return new PowerIntTable(char2state2next[token]);
-            }
-        };
+        final TransferTable<Character, PowerIntState> transfer = token -> new PowerIntTable(char2state2next[token]);
 
         final WrappedBitSet justInitial = new WrappedBitSet(basisStates.length);
         justInitial.set(initialState);
@@ -56,8 +50,8 @@ public class NFABuilder {
                 new PowerIntState(basisStates, justInitial), PowerIntTable.REDUCER)
         {
             @Override
-            public PowerIntState resetTerminatedPattern(PowerIntState state, int pattern) {
-                WrappedBitSet reset = new WrappedBitSet(basisStates.length);
+            public PowerIntState resetTerminatedPattern(final PowerIntState state, final int pattern) {
+                final WrappedBitSet reset = new WrappedBitSet(basisStates.length);
                 reset.or(state.getSubset());
                 for(int substate = reset.nextSetBit(0); substate != -1; substate = reset.nextSetBit(substate + 1)) {
                     if(basisStates[substate].getTerminatedPatterns().get(pattern)) {
@@ -71,20 +65,20 @@ public class NFABuilder {
     }
 
     public class StateBuilder {
-        private int state;
-        private int[] termPatterns;
+        private final int state;
+        private final int[] termPatterns;
 
-        public StateBuilder(int state, int... termPatterns) {
+        public StateBuilder(final int state, final int... termPatterns) {
             this.state = state;
             this.termPatterns = termPatterns;
         }
 
-        public void transitions(Object... char2state) {
+        public void transitions(final Object... char2state) {
             for(int i = 0; i < char2state.length; i += 2) {
                 transitions.add(new Transition(this.state, (Character)char2state[i], (Integer)char2state[i+1]));
             }
-            WrappedBitSet t = new WrappedBitSet(numPatterns);
-            for(int tp : termPatterns)
+            final WrappedBitSet t = new WrappedBitSet(numPatterns);
+            for(final int tp : termPatterns)
                 t.set(tp);
             basisStates[state] = new IntState(state, t);
         }
@@ -95,7 +89,7 @@ public class NFABuilder {
         Character c;
         int to;
 
-        private Transition(int from, Character c, int to) {
+        private Transition(final int from, final Character c, final int to) {
             this.from = from;
             this.c = c;
             this.to = to;

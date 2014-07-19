@@ -4,38 +4,38 @@ package org.jkff.ire.regex;
  * Created on: 04.09.2010 13:12:26
  */
 public class RegexParser {
-    public static RxNode parse(String regex) {
+    public static RxNode parse(final String regex) {
         return parseAlt(new Tokenizer(regex));
     }
 
-    private static boolean expect(Tokenizer t, char c) {
-        Character p = t.peek();
-        return p != null && p.charValue() == c;
+    private static boolean expect(final Tokenizer t, final char c) {
+        final Character p = t.peek();
+        return p != null && p == c;
     }
 
-    private static RxNode parseAlt(Tokenizer t) {
-        RxNode a = parseSequence(t);
+    private static RxNode parseAlt(final Tokenizer t) {
+        final RxNode a = parseSequence(t);
         if (!expect(t, '|')) {
             return a;
         }
         t.next();
-        RxNode b = parseAlt(t);
+        final RxNode b = parseAlt(t);
         return new Alternative(a, b);
     }
 
-    private static RxNode parseSequence(Tokenizer t) {
+    private static RxNode parseSequence(final Tokenizer t) {
         if(expect(t, '|') || expect(t, ')')) {
             return new Empty();
         }
-        RxNode a = parseUnary(t);
+        final RxNode a = parseUnary(t);
         if(expect(t, '|') || expect(t, ')') || t.peek() == null) {
             return a;
         }
-        RxNode b = parseSequence(t);
+        final RxNode b = parseSequence(t);
         return new Sequence(a, b);
     }
 
-    private static RxNode parseUnary(Tokenizer t) {
+    private static RxNode parseUnary(final Tokenizer t) {
         RxNode a = parseAtom(t);
         while(true) {
             if(expect(t, '+')) {
@@ -53,7 +53,7 @@ public class RegexParser {
         }
     }
 
-    private static RxNode parseAtom(Tokenizer t) {
+    private static RxNode parseAtom(final Tokenizer t) {
         if(expect(t, '(')) {
             t.next();
             return parseParen(t);
@@ -68,8 +68,8 @@ public class RegexParser {
         }
     }
 
-    private static RxNode parseParen(Tokenizer t) {
-        RxNode a = parseAlt(t);
+    private static RxNode parseParen(final Tokenizer t) {
+        final RxNode a = parseAlt(t);
         if(!expect(t, ')')) {
             throw new IllegalArgumentException("Expected ')', got " + t.peek());
         }
@@ -77,12 +77,12 @@ public class RegexParser {
         return a;
     }
 
-    private static RxNode parseCharacterRange(Tokenizer t) {
-        StringBuilder s = new StringBuilder();
+    private static RxNode parseCharacterRange(final Tokenizer t) {
+        final StringBuilder s = new StringBuilder();
         Character last = null;
         while(!expect(t, ']')) {
             Character c = parseChar(t);
-            if(c != null && c.charValue() == '-' && last != null) {
+            if(c != null && c == '-' && last != null) {
                 c = parseChar(t);
                 for(char i = last; i <= c; ++i) {
                     s.append(i);
@@ -96,7 +96,7 @@ public class RegexParser {
         return CharacterClass.oneOf(s.toString());
     }
 
-    private static Character parseChar(Tokenizer t) {
+    private static Character parseChar(final Tokenizer t) {
         if(expect(t, '\\')) {
             t.next();
         }
@@ -104,10 +104,10 @@ public class RegexParser {
     }
 
     private static class Tokenizer {
-        private String s;
+        private final String s;
         private int pos;
 
-        public Tokenizer(String s) {
+        public Tokenizer(final String s) {
             this.s = s;
         }
 

@@ -22,85 +22,63 @@ public class DFAMatcher {
     {
         final ST initial = bidfa.getForward().getInitialState();
 
-        Function2<SP<ST>, IndexedString, SP<ST>> addString = new Function2<SP<ST>, IndexedString, SP<ST>>() {
-            public SP<ST> applyTo(SP<ST> sp, IndexedString s) {
-                return new SP<ST>(((DFAIndexedString<ST>) s).getForward().next(sp.state), sp.pos+s.length());
-            }
-        };
+        final Function2<SP<ST>, IndexedString, SP<ST>> addString = (sp, s) -> new SP<ST>(((DFAIndexedString<ST>) s).getForward().next(sp.state), sp.pos+s.length());
 
-        Function2<SP<ST>, Character, SP<ST>> addChar = new Function2<SP<ST>, Character, SP<ST>>() {
-            public SP<ST> applyTo(SP<ST> sp, Character c) {
-                return new SP<ST>(bidfa.getForward().transfer(c).next(sp.state), sp.pos+1);
-            }
-        };
+        final Function2<SP<ST>, Character, SP<ST>> addChar = (sp, c) -> new SP<ST>(bidfa.getForward().transfer(c).next(sp.state), sp.pos+1);
 
-        List<Match> res = newArrayList();
+        final List<Match> res = newArrayList();
 
-        int shift = 0;
+        final int shift = 0;
 
-        SP<ST> matchStartState = new SP<ST>(initial, 0);
+        SP<ST> matchStartState = new SP<>(initial, 0);
         IndexedString rem = string;
         IndexedString seen = string.subSequence(0,0);
 
         while(true) {
-            Pair<IndexedString, IndexedString> p = rem.splitAfterRise(
+            final Pair<IndexedString, IndexedString> p = rem.splitAfterRise(
                     matchStartState, addString, addChar, DFAMatcher.<ST>hasForwardMatchAfter(shift));
             if(p == null)
                 break;
 
-            DFAIndexedString<ST> matchingPrefix = (DFAIndexedString<ST>) p.first;
+            final DFAIndexedString<ST> matchingPrefix = (DFAIndexedString<ST>) p.first;
             rem = p.second;
             seen = seen.append(matchingPrefix);
 
             final ST stateAfterMatch = matchingPrefix.getForward().next(matchStartState.state);
-            WrappedBitSet term = stateAfterMatch.getTerminatedPatterns();
+            final WrappedBitSet term = stateAfterMatch.getTerminatedPatterns();
 
-            ST backwardInitial = bidfa.getBackward().getInitialState();
+            final ST backwardInitial = bidfa.getBackward().getInitialState();
 
             ST nextMatchStart = stateAfterMatch;
 
             for(int bit = term.nextSetBit(0); bit >= 0; bit = term.nextSetBit(bit+1)) {
                 final int bit2 = bit;
 
-                Function2<ST, IndexedString, ST> addStringBack = new Function2<ST, IndexedString, ST>() {
-                    public ST applyTo(ST st, IndexedString s) {
-                        return ((DFAIndexedString<ST>) s).getBackward().next(st);
-                    }
+                final Function2<ST, IndexedString, ST> addStringBack = (st, s) -> ((DFAIndexedString<ST>) s).getBackward().next(st);
+
+                final Function2<ST, Character, ST> addCharBack = (st, c) -> bidfa.getBackward().transfer(c).next(st);
+
+                final Predicate<ST> startsThisMatch = state -> {
+                    final WrappedBitSet tp = state.getTerminatedPatterns();
+                    return tp!=null && tp.get(bit2);
                 };
 
-                Function2<ST, Character, ST> addCharBack = new Function2<ST, Character, ST>() {
-                    public ST applyTo(ST st, Character c) {
-                        return bidfa.getBackward().transfer(c).next(st);
-                    }
-                };
-
-                Predicate<ST> startsThisMatch = new Predicate<ST>() {
-                    public boolean isTrueFor(ST state) {
-                        WrappedBitSet tp = state.getTerminatedPatterns();
-                        return tp!=null && tp.get(bit2);
-                    }
-                };
-
-                int len = seen.splitAfterBackRise(
+                final int len = seen.splitAfterBackRise(
                         backwardInitial, addStringBack, addCharBack, startsThisMatch).second.length();
-                int startPos = seen.length() - len;
+                final int startPos = seen.length() - len;
                 res.add(new Match(bit, startPos, len));
 
                 nextMatchStart = bidfa.getForward().resetTerminatedPattern(nextMatchStart, bit);
             }
 
-            matchStartState = new SP<ST>(nextMatchStart, matchingPrefix.length() + 1);
+            matchStartState = new SP<>(nextMatchStart, matchingPrefix.length() + 1);
         }
 
         return res;
     }
 
     private static <ST extends State> Predicate<SP<ST>> hasForwardMatchAfter(final int pos) {
-        return new Predicate<SP<ST>>() {
-            public boolean isTrueFor(SP<ST> sp) {
-                return !sp.state.getTerminatedPatterns().isEmpty() && sp.pos >= pos;
-            }
-        };
+        return sp -> !sp.state.getTerminatedPatterns().isEmpty() && sp.pos >= pos;
     }
 
     // State and position.
@@ -108,7 +86,7 @@ public class DFAMatcher {
         ST state;
         int pos;
 
-        SP(ST state, int pos) {
+        SP(final ST state, final int pos) {
             this.state = state;
             this.pos = pos;
         }

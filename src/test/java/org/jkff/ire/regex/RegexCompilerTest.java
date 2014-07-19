@@ -14,14 +14,14 @@ import static org.junit.Assert.*;
 public class RegexCompilerTest {
     @Test
     public void testEmpty() {
-        DFA<Character,PowerIntState> dfa = toDFA(toNFA(new Labeled(new Empty(), 0)), 1);
+        final DFA<Character,PowerIntState> dfa = toDFA(toNFA(new Labeled(new Empty(), 0)), 1);
         assertTerminatesPatterns(dfa, "", true);
         assertTerminatesPatterns(dfa, "a", false);
     }
 
     @Test
     public void testAnyChar() {
-        DFA<Character,PowerIntState> dfa = toDFA(toNFA(new Labeled(CharacterClass.ANY_CHAR, 0)), 1);
+        final DFA<Character,PowerIntState> dfa = toDFA(toNFA(new Labeled(CharacterClass.ANY_CHAR, 0)), 1);
         assertTerminatesPatterns(dfa, "", false);
         assertTerminatesPatterns(dfa, "a", true);
         assertTerminatesPatterns(dfa, "ab", false);
@@ -29,7 +29,7 @@ public class RegexCompilerTest {
 
     @Test
     public void testAB() {
-        DFA<Character,PowerIntState> dfa = toDFA(toNFA(new Labeled(
+        final DFA<Character,PowerIntState> dfa = toDFA(toNFA(new Labeled(
                 new Sequence(CharacterClass.oneOf("a"), CharacterClass.oneOf("b")), 0)), 1);
         assertTerminatesPatterns(dfa, "", false);
         assertTerminatesPatterns(dfa, "a", false);
@@ -39,7 +39,7 @@ public class RegexCompilerTest {
 
     @Test
     public void testAorB() {
-        DFA<Character,PowerIntState> dfa = toDFA(toNFA(new Labeled(
+        final DFA<Character,PowerIntState> dfa = toDFA(toNFA(new Labeled(
                 new Alternative(CharacterClass.oneOf("a"), CharacterClass.oneOf("b")), 0)), 1);
         assertTerminatesPatterns(dfa, "", false);
         assertTerminatesPatterns(dfa, "a", true);
@@ -51,7 +51,7 @@ public class RegexCompilerTest {
 
     @Test
     public void testAorMore() {
-        DFA<Character,PowerIntState> dfa = toDFA(toNFA(new Labeled(
+        final DFA<Character,PowerIntState> dfa = toDFA(toNFA(new Labeled(
                 new OnceOrMore(CharacterClass.oneOf("a")), 0)), 1);
         assertTerminatesPatterns(dfa, "", false);
         assertTerminatesPatterns(dfa, "a", true);
@@ -64,7 +64,7 @@ public class RegexCompilerTest {
 
     @Test
     public void testABorMore() {
-        DFA<Character,PowerIntState> dfa = toDFA(toNFA(new Labeled(
+        final DFA<Character,PowerIntState> dfa = toDFA(toNFA(new Labeled(
                 new OnceOrMore(new Sequence(CharacterClass.oneOf("a"), CharacterClass.oneOf("b"))), 0)), 1);
         assertTerminatesPatterns(dfa, "", false);
         assertTerminatesPatterns(dfa, "a", false);
@@ -76,13 +76,13 @@ public class RegexCompilerTest {
     }
 
     private void assertTerminatesPatterns(
-            DFA<Character,PowerIntState> dfa, String input, boolean... terminatesWhichPatterns)
+            final DFA<Character,PowerIntState> dfa, final String input, final boolean... terminatesWhichPatterns)
     {
         PowerIntState s = dfa.getInitialState();
-        for(char c : input.toCharArray()) {
+        for(final char c : input.toCharArray()) {
             s = dfa.transfer(c).next(s);
         }
-        WrappedBitSet bs = s.getTerminatedPatterns();
+        final WrappedBitSet bs = s.getTerminatedPatterns();
         for(int i = 0; i < terminatesWhichPatterns.length; ++i) {
             assertEquals("Pattern " + i, terminatesWhichPatterns[i], (bs == null) ? false : bs.get(i));
         }

@@ -7,17 +7,17 @@ public class Pair<A, B> {
     public final A first;
     public final B second;
 
-    public Pair(A first, B second) {
+    public Pair(final A first, final B second) {
         this.first = first;
         this.second = second;
     }
 
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(final Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        Pair pair = (Pair) o;
+        final Pair pair = (Pair) o;
 
         if (first != null ? !first.equals(pair.first) : pair.first != null) return false;
         if (second != null ? !second.equals(pair.second) : pair.second != null) return false;
@@ -36,7 +36,7 @@ public class Pair<A, B> {
         return "(" + first + ", " + second + ")";
     }
 
-    public static <A, B> Pair<A, B> of(A a, B b) {
-        return new Pair<A,B>(a, b);
+    public static <A, B> Pair<A, B> of(final A a, final B b) {
+        return new Pair<>(a, b);
     }
 }

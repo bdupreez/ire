@@ -6,7 +6,7 @@ import java.util.*;
  * Created on: 13.10.2010 21:44:19
  */
 public class CoarsestPartition {
-    public static int[] coarsestStablePartition(int[] p, int[][] edges) {
+    public static int[] coarsestStablePartition(int[] p, final int[][] edges) {
         // Find the coarsest refining 'q' of the partition 'p' such that
         // for every two blocks B1 and B2 of 'q', either in(B1) = B2,
         // or in(B1) is disjoint with B2.
@@ -22,7 +22,7 @@ public class CoarsestPartition {
         do {
             anythingChanged = false;
             // Refine p with respect to each block of p.
-            Map<Integer, List<Integer>> pBlocks = CollectionFactory.newLinkedHashMap();
+            final Map<Integer, List<Integer>> pBlocks = CollectionFactory.newLinkedHashMap();
             for (int i = 0; i < p.length; ++i) {
                 List<Integer> block = pBlocks.get(p[i]);
                 if (block == null) {
@@ -31,9 +31,10 @@ public class CoarsestPartition {
                 block.add(i);
             }
 
-            Map<Integer, List<Integer>> ins = CollectionFactory.newLinkedHashMap();
-            for (int[] edge : edges) {
-                int src = edge[0], dst = edge[1];
+            final Map<Integer, List<Integer>> ins = CollectionFactory.newLinkedHashMap();
+            for (final int[] edge : edges) {
+                final int src = edge[0];
+                final int dst = edge[1];
                 List<Integer> is = ins.get(dst);
                 if (is == null) {
                     ins.put(dst, is = CollectionFactory.newArrayList());
@@ -42,13 +43,13 @@ public class CoarsestPartition {
             }
 
             int[] q = Arrays.copyOf(p, p.length);
-            for (List<Integer> block : pBlocks.values()) {
-                Set<Integer> in = CollectionFactory.newLinkedHashSet();
-                for (int member : block) {
-                    List<Integer> curIn = ins.get(member);
+            for (final List<Integer> block : pBlocks.values()) {
+                final Set<Integer> in = CollectionFactory.newLinkedHashSet();
+                for (final int member : block) {
+                    final List<Integer> curIn = ins.get(member);
                     if (curIn != null) in.addAll(curIn);
                 }
-                int[] newQ = refine(q, in);
+                final int[] newQ = refine(q, in);
                 if (!Arrays.equals(q, newQ)) {
                     anythingChanged = true;
                     q = newQ;
@@ -59,15 +60,15 @@ public class CoarsestPartition {
         return p;
     }
 
-    private static int[] refine(int[] q, Set<Integer> s) {
+    private static int[] refine(final int[] q, final Set<Integer> s) {
         // Make it so that every block is either contained in S
         // or doesn't intersect it.
         int maxBlock = 0;
-        for (int c : q) maxBlock = Math.max(c, maxBlock);
-        Map<Integer, Integer> block2size = CollectionFactory.newLinkedHashMap();
-        Map<Integer, Integer> block2covered = CollectionFactory.newLinkedHashMap();
+        for (final int c : q) maxBlock = Math.max(c, maxBlock);
+        final Map<Integer, Integer> block2size = CollectionFactory.newLinkedHashMap();
+        final Map<Integer, Integer> block2covered = CollectionFactory.newLinkedHashMap();
         for (int i = 0; i < q.length; ++i) {
-            int block = q[i];
+            final int block = q[i];
             if (!block2size.containsKey(block)) block2size.put(block, 0);
             block2size.put(block, block2size.get(block) + 1);
             if (s.contains(i)) {
@@ -76,13 +77,13 @@ public class CoarsestPartition {
             }
         }
 
-        int[] res = Arrays.copyOf(q, q.length);
+        final int[] res = Arrays.copyOf(q, q.length);
 
-        for (int block : block2size.keySet()) {
+        for (final int block : block2size.keySet()) {
             if (block2covered.containsKey(block) && !block2covered.get(block).equals(block2size.get(block))) {
                 // Split this block into S and B-S: Move S to a new block.
-                int newBlock = ++maxBlock;
-                for (int i : s) if (q[i] == block) res[i] = newBlock;
+                final int newBlock = ++maxBlock;
+                s.stream().filter(i -> q[i] == block).forEach(i -> res[i] = newBlock);
             }
         }
 

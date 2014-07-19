@@ -8,12 +8,12 @@ public abstract class CharacterClass implements RxNode {
 
     public static CharacterClass ANY_CHAR = new CharacterClass() {
         @Override
-        public boolean acceptsChar(char c) {
+        public boolean acceptsChar(final char c) {
             return true;
         }
 
         @Override
-        public boolean intersects(CharacterClass c) {
+        public boolean intersects(final CharacterClass c) {
             return true;
         }
 
@@ -29,23 +29,23 @@ public abstract class CharacterClass implements RxNode {
     public abstract boolean intersects(CharacterClass c);
 
     private static class OneOf extends CharacterClass {
-        private String s;
+        private final String s;
 
-        public OneOf(String s) {
+        public OneOf(final String s) {
             this.s = s;
         }
 
         @Override
-        public boolean acceptsChar(char c) {
+        public boolean acceptsChar(final char c) {
             return s.indexOf(c) > -1;
         }
 
         @Override
-        public boolean intersects(CharacterClass c) {
+        public boolean intersects(final CharacterClass c) {
             if(c instanceof OneOf) {
-                OneOf other = (OneOf) c;
+                final OneOf other = (OneOf) c;
                 for(int i = 0; i < s.length(); ++i) {
-                    char ch = s.charAt(i);
+                    final char ch = s.charAt(i);
                     if(other.s.indexOf(ch) != -1) {
                         return true;
                     }
@@ -62,11 +62,10 @@ public abstract class CharacterClass implements RxNode {
             return "[" + s + "]";
         }
 
-        public boolean equals(Object other) {
+        public boolean equals(final Object other) {
             if(other == this) return true;
             if(other == null) return false;
-            if(!(other instanceof OneOf)) return false;
-            return s.equals(((OneOf)other).s);
+            return other instanceof OneOf && s.equals(((OneOf) other).s);
         }
 
         public int hashCode() {

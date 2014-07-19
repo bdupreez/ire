@@ -6,7 +6,7 @@ package org.jkff.ire.regex;
 public class OnceOrMore implements RxNode {
     public final RxNode a;
 
-    public OnceOrMore(RxNode a) {
+    public OnceOrMore(final RxNode a) {
         this.a = a;
     }
 }

@@ -6,44 +6,44 @@ public class WrappedBitSet implements Cloneable {
 
     public static final long WORD_MASK = 0xffffffffffffffffL;
 
-    private long[] words;
-    private int offset;
-    private int numWords;
+    private final long[] words;
+    private final int offset;
+    private final int numWords;
     private int numBits;
 
-    public WrappedBitSet(int numBits) {
+    public WrappedBitSet(final int numBits) {
         words = new long[wordIndex(numBits -1) + 1];
         this.offset = 0;
         this.numWords = words.length;
         this.numBits = numBits;
     }
 
-    public WrappedBitSet(long[] words, int offset, int numWords, int numBits) {
+    public WrappedBitSet(final long[] words, final int offset, final int numWords, final int numBits) {
         this.words = words;
         this.offset = offset;
         this.numWords = numWords;
     }
 
-    private int wordIndex(int bitIndex) {
+    private int wordIndex(final int bitIndex) {
         return offset + (bitIndex >> ADDRESS_BITS_PER_WORD);
     }
 
-    public void set(int bitIndex) {
-        int wordIndex = wordIndex(bitIndex);
+    public void set(final int bitIndex) {
+        final int wordIndex = wordIndex(bitIndex);
     	words[wordIndex] |= (1L << bitIndex);
     }
 
-    public void clear(int bitIndex) {
-        int wordIndex = wordIndex(bitIndex);
+    public void clear(final int bitIndex) {
+        final int wordIndex = wordIndex(bitIndex);
         words[wordIndex] &= ~(1L << bitIndex);
     }
 
-    public boolean get(int bitIndex) {
-	    int wordIndex = wordIndex(bitIndex);
+    public boolean get(final int bitIndex) {
+	    final int wordIndex = wordIndex(bitIndex);
 	    return ((words[wordIndex] & (1L << bitIndex)) != 0);
     }
 
-    public int nextSetBit(int fromIndex) {
+    public int nextSetBit(final int fromIndex) {
         int u = (fromIndex >> ADDRESS_BITS_PER_WORD);
         if(u >= numWords)
             return -1;
@@ -57,7 +57,7 @@ public class WrappedBitSet implements Cloneable {
         }
     }
 
-    public static int nextSetBit(long[] words, int offset, int length, int fromIndex) {
+    public static int nextSetBit(final long[] words, final int offset, final int length, final int fromIndex) {
         int u = (fromIndex >> ADDRESS_BITS_PER_WORD);
         if(u >= length)
             return -1;
@@ -91,18 +91,18 @@ public class WrappedBitSet implements Cloneable {
         return sum;
     }
 
-    public void and(WrappedBitSet set) {
+    public void and(final WrappedBitSet set) {
         for (int i = 0; i < numWords; ++i)
             words[offset+i] &= set.words[set.offset+i];
     }
 
-    public void or(WrappedBitSet set) {
+    public void or(final WrappedBitSet set) {
         for (int i = 0; i < numWords; ++i)
             words[offset+i] |= set.words[set.offset+i];
     }
 
     public String toString() {
-        StringBuilder b = new StringBuilder();
+        final StringBuilder b = new StringBuilder();
 
         b.append('{');
         int i = nextSetBit(0);
@@ -118,7 +118,7 @@ public class WrappedBitSet implements Cloneable {
     }
 
     public WrappedBitSet makeCopy() {
-        long[] words = new long[numWords];
+        final long[] words = new long[numWords];
         System.arraycopy(this.words, offset, words, 0, numWords);
         return new WrappedBitSet(words, 0, words.length, numBits);
     }
